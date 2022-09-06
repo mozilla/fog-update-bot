@@ -47,7 +47,13 @@ def swap_metrics_files(content, app, metrics_files):
     app = f"- app_name: {app}"
     indent = 0
 
-    for line in content.split("\n"):
+    lines = content.split("\n")
+
+    # Remove trailing newlines.
+    while not lines[-1]:
+        lines.pop()
+
+    for line in lines:
         if state is None and line.strip() == app:
             state = "app"
         elif state == "app" and "metrics_files" in line:
@@ -75,7 +81,7 @@ def get_latest_metrics_index():
     return r.text
 
 
-def _update_repositories_yaml(repo, branch, author, app, metrics_yamls):
+def _rewrite_repositories_yaml(repo, branch, app, metrics_yamls):
     contents = repo.get_contents("repositories.yaml", ref=branch)
     content = contents.decoded_content.decode("utf-8")
 
@@ -84,6 +90,12 @@ def _update_repositories_yaml(repo, branch, author, app, metrics_yamls):
         raise Exception(
             "Update to repositories.yaml resulted in no changes: maybe the file was already up to date?"  # noqa
         )
+
+    return new_content
+
+
+def _commit_repositories_yaml(repo, branch, author, new_content):
+    contents = repo.get_contents("repositories.yaml", ref=branch)
 
     repo.update_file(
         contents.path,
@@ -94,6 +106,8 @@ def _update_repositories_yaml(repo, branch, author, app, metrics_yamls):
         author=author,
     )
 
+    return True
+
 
 def main(argv, repo, author, debug=False, dry_run=False):
     if len(argv) < 1:
@@ -101,12 +115,23 @@ def main(argv, repo, author, debug=False, dry_run=False):
         sys.exit(1)
 
     release_branch_name = "main"
+    short_version = "main"
+
+    metrics_index = get_latest_metrics_index()
+    metrics_yamls = sorted(eval_extract(metrics_index, "metrics_yamls"))
+
+    print(f"{ts()} Updating repositories.yaml")
+    try:
+        new_content = _rewrite_repositories_yaml(
+            repo, release_branch_name, "firefox_desktop", metrics_yamls
+        )
+    except Exception as e:
+        print(f"{ts()} {e}")
+        return
 
     if dry_run:
         print(f"{ts()} Dry-run so not continuing.")
         return
-
-    short_version = "main"
 
     # Create a non unique PR branch name for work on this ac release branch.
     pr_branch_name = f"fog-update/update-metrics-index-{short_version}"
@@ -129,13 +154,7 @@ def main(argv, repo, author, debug=False, dry_run=False):
     )
     print(f"{ts()} Created branch {pr_branch_name} on {release_branch.commit.sha}")
 
-    metrics_index = get_latest_metrics_index()
-    metrics_yamls = sorted(eval_extract(metrics_index, "metrics_yamls"))
-
-    print(f"{ts()} Updating repositories.yaml")
-    _update_repositories_yaml(
-        repo, pr_branch_name, author, "firefox_desktop", metrics_yamls
-    )
+    _commit_repositories_yaml(repo, pr_branch_name, author, new_content)
 
     print(f"{ts()} Creating pull request")
     pr = repo.create_pull(

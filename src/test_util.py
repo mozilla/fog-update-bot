@@ -43,6 +43,7 @@ def test_eval_metrics_index():
     content = eval_extract(METRICS_INDEX, "metrics_yamls")
     assert content == ["A", "B", "C"]
 
+
 def test_swap_repositories_yaml():
     metrics_files = eval_extract(METRICS_INDEX, "metrics_yamls")
     output = swap_metrics_files(REPOSITORIES_YAML, "firefox_desktop", metrics_files)
@@ -52,6 +53,21 @@ def test_swap_repositories_yaml():
     assert "- A" in output
     assert "- B" in output
     assert "- C" in output
+    # ping files untouched.
+    assert "- PING_FILES" in output
+
+    # Other app untouched
+    assert "- OTHER_METRICS_FILES" in output
+    assert "- OTHER_PING_FILES" in output
+
+
+def test_swap_repositories_yaml_unchanged():
+    metrics_files = ["METRICS_FILES"]
+    output = swap_metrics_files(REPOSITORIES_YAML, "firefox_desktop", metrics_files)
+
+    # New files added.
+    assert "- METRICS_FILES" in output
+    assert "- A" not in output
     # ping files untouched.
     assert "- PING_FILES" in output
 
