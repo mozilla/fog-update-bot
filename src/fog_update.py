@@ -26,9 +26,15 @@ def eval_extract(code, key):
     Eval `code` and extract the variable named by `key`.
 
     `code` should be valid Python code.
-    No builtins are provided.
+    Only the builtins `list` and `set` are provided.
+
+    Note: this execute arbitrary Python code.
+    Because of the limited builtins list this should be reasonably safe.
+    Still only use this with known valid code!
     """
-    globals = {"__builtins__": {}}
+
+    # Allow `list` and `set`, so `list(set(a+b+c))` works.
+    globals = {"__builtins__": {"list": __builtins__.list, "set": __builtins__.set}}
     exec(code, globals)
     return globals[key]
 
