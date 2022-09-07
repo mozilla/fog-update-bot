@@ -39,9 +39,10 @@ def eval_extract(code, key):
     return globals[key]
 
 
-def swap_metrics_files(content, app, metrics_files):
+def swap_file_list(content, app, files, metrics_or_pings, library=False):
     """
-    Replace the list of `metrics_files` in `content` with `metrics_files`.
+    Replace the list of `metrics_files` or `ping_files` in `content` with `files`
+    for the given app or library..
     Returns the changed content.
 
     All other content is left untouched.
@@ -50,7 +51,10 @@ def swap_metrics_files(content, app, metrics_files):
     """
     output = io.StringIO()
     state = None
-    app = f"- app_name: {app}"
+    if library:
+        app = f"- library_name: {app}"
+    else:
+        app = f"- app_name: {app}"
     indent = 0
 
     lines = content.split("\n")
@@ -62,7 +66,9 @@ def swap_metrics_files(content, app, metrics_files):
     for line in lines:
         if state is None and line.strip() == app:
             state = "app"
-        elif state == "app" and "metrics_files" in line:
+        elif state == "app" and metrics_or_pings == "metrics" and "metrics_files:" in line:
+            state = "files"
+        elif state == "app" and metrics_or_pings == "pings" and "ping_files:" in line:
             state = "files"
         elif state == "files":
             if line.strip().startswith("-"):
@@ -70,7 +76,7 @@ def swap_metrics_files(content, app, metrics_files):
                 indent = len(ws)
                 continue
             else:
-                for file in metrics_files:
+                for file in files:
                     print(" " * indent, file=output, end="")
                     print(f"- {file}\n", file=output, end="")
                 state = None
@@ -87,11 +93,15 @@ def get_latest_metrics_index():
     return r.text
 
 
-def _rewrite_repositories_yaml(repo, branch, app, metrics_yamls):
+def _rewrite_repositories_yaml(repo, branch, data):
     contents = repo.get_contents("repositories.yaml", ref=branch)
     content = contents.decoded_content.decode("utf-8")
 
-    new_content = swap_metrics_files(content, app, metrics_yamls)
+    new_content = content
+    for item in data:
+        name, metrics_or_pings, library, files = item
+        new_content = swap_file_list(new_content, name, files, metrics_or_pings, library)
+
     if content == new_content:
         raise Exception(
             "Update to repositories.yaml resulted in no changes: maybe the file was already up to date?"  # noqa
@@ -124,13 +134,26 @@ def main(argv, repo, author, debug=False, dry_run=False):
     short_version = "main"
 
     metrics_index = get_latest_metrics_index()
-    metrics_yamls = sorted(eval_extract(metrics_index, "metrics_yamls"))
+    firefox_desktop_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
+    firefox_desktop_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
+    pine_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
+    pine_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
+    gecko_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
+    gecko_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
+
+    data = [
+        # Name, metrics/pings, library?, files
+        ["firefox_desktop", "metrics", False, firefox_desktop_metrics],
+        ["firefox_desktop", "pings", False, firefox_desktop_pings],
+        ["pine", "metrics", False, gecko_metrics],
+        ["pine", "pings", False, gecko_pings],
+        ["gecko", "metrics", True, gecko_metrics],
+        ["gecko", "pings", True, gecko_pings],
+    ]
 
     print(f"{ts()} Updating repositories.yaml")
     try:
-        new_content = _rewrite_repositories_yaml(
-            repo, release_branch_name, "firefox_desktop", metrics_yamls
-        )
+        new_content = _rewrite_repositories_yaml(repo, release_branch_name, data)
     except Exception as e:
         print(f"{ts()} {e}")
         return
