@@ -15,6 +15,7 @@ DEFAULT_ORGANIZATION = "badboy"
 DEFAULT_AUTHOR_NAME = "data-updater"
 DEFAULT_AUTHOR_EMAIL = "jrediger@mozilla.com"
 USAGE = "usage: fog-update"
+REVIEWERS = ["@mozilla/glean"]
 BODY_TEMPLATE = """
 This (automated) patch updates the list from metrics_index.py.
 
@@ -208,6 +209,7 @@ def main(argv, repo, author, debug=False, dry_run=False):
         head=pr_branch_name,
         base=release_branch_name,
     )
+    pr.create_review_request(team_reviewers=REVIEWERS)
     print(f"{ts()} Pull request at {pr.html_url}")
 
 
