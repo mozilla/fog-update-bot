@@ -15,6 +15,20 @@ DEFAULT_ORGANIZATION = "badboy"
 DEFAULT_AUTHOR_NAME = "data-updater"
 DEFAULT_AUTHOR_EMAIL = "jrediger@mozilla.com"
 USAGE = "usage: fog-update"
+BODY_TEMPLATE = """
+This (automated) patch updates the list from metrics_index.py.
+
+For reviewers:
+
+* Canonical source for the index: <https://searchfox.org/mozilla-central/source/toolkit/components/glean/metrics_index.py>
+* Please double-check that the changes here are valid and that the referenced files exist.
+* Please double-check that none of the files are _deleted_ from the list.
+* Delete this branch after merging or closing the PR.
+
+---
+
+The source code of this automation bot lives in [badboy/fog-update-bot](https://github.com/badboy/fog-update-bot).
+"""
 
 
 def ts():
@@ -188,7 +202,7 @@ def main(argv, repo, author, debug=False, dry_run=False):
     print(f"{ts()} Creating pull request")
     pr = repo.create_pull(
         title=f"Update to latest metrics_index list on {release_branch_name}",
-        body="This (automated) patch updates the list from metrics_index.py",
+        body=BODY_TEMPLATE,
         head=pr_branch_name,
         base=release_branch_name,
     )
