@@ -35,9 +35,9 @@ def ts():
     return str(datetime.datetime.now())
 
 
-def eval_extract(code, key):
+def eval_extract(code):
     """
-    Eval `code` and extract the variable named by `key`.
+    Eval `code` and return a map of variables and their values.
 
     `code` should be valid Python code.
     Only the builtins `list` and `set` are provided.
@@ -48,9 +48,10 @@ def eval_extract(code, key):
     """
 
     # Allow `list` and `set`, so `list(set(a+b+c))` works.
-    globals = {"__builtins__": {"list": __builtins__.list, "set": __builtins__.set}}
-    exec(code, globals)
-    return globals[key]
+    globs = {"__builtins__": {"list": list, "set": set, "sorted": sorted}}
+    exec(code, globs)
+    globs.pop("__builtins__")
+    return globs
 
 
 def swap_file_list(content, app, files, metrics_or_pings, library=False):
@@ -148,12 +149,13 @@ def main(argv, repo, author, debug=False, dry_run=False):
     short_version = "main"
 
     metrics_index = get_latest_metrics_index()
-    firefox_desktop_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
-    firefox_desktop_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
-    pine_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
-    pine_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
-    gecko_metrics = sorted(eval_extract(metrics_index, "metrics_yamls"))
-    gecko_pings = sorted(eval_extract(metrics_index, "pings_yamls"))
+    data = eval_extract(metrics_index)
+    firefox_desktop_metrics = sorted(data["metrics_yamls"])
+    firefox_desktop_pings = sorted(data["pings_yamls"])
+    pine_metrics = sorted(data["metrics_yamls"])
+    pine_pings = sorted(data["pings_yamls"])
+    gecko_metrics = sorted(data["metrics_yamls"])
+    gecko_pings = sorted(data["pings_yamls"])
 
     data = [
         # Name, metrics/pings, library?, files
