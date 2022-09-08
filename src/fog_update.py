@@ -151,21 +151,21 @@ def main(argv, repo, author, debug=False, dry_run=False):
 
     metrics_index = get_latest_metrics_index()
     data = eval_extract(metrics_index)
-    firefox_desktop_metrics = sorted(data["metrics_yamls"])
-    firefox_desktop_pings = sorted(data["pings_yamls"])
-    pine_metrics = sorted(data["metrics_yamls"])
-    pine_pings = sorted(data["pings_yamls"])
-    gecko_metrics = sorted(data["metrics_yamls"])
-    gecko_pings = sorted(data["pings_yamls"])
+    gecko_metrics = sorted(data["gecko_metrics"])
+    gecko_pings = sorted(data["gecko_pings"])
+    firefox_desktop_metrics = sorted(data["firefox_desktop_metrics"])
+    firefox_desktop_pings = sorted(data["firefox_desktop_pings"])
+    background_update_metrics = sorted(data["background_update_metrics"])
+    background_update_pings = sorted(data["background_update_pings"])
 
     data = [
         # Name, metrics/pings, library?, files
-        ["firefox_desktop", "metrics", False, firefox_desktop_metrics],
-        ["firefox_desktop", "pings", False, firefox_desktop_pings],
-        ["pine", "metrics", False, gecko_metrics],
-        ["pine", "pings", False, gecko_pings],
         ["gecko", "metrics", True, gecko_metrics],
         ["gecko", "pings", True, gecko_pings],
+        ["firefox_desktop", "metrics", False, firefox_desktop_metrics],
+        ["firefox_desktop", "pings", False, firefox_desktop_pings],
+        ["firefox_desktop_background_update", "metrics", False, background_update_metrics],
+        ["firefox_desktop_background_update", "pings", False, background_update_pings],
     ]
 
     print(f"{ts()} Updating repositories.yaml")
