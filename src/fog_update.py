@@ -83,7 +83,11 @@ def swap_file_list(content, app, files, metrics_or_pings, library=False):
     for line in lines:
         if state is None and line.strip() == app:
             state = "app"
-        elif state == "app" and metrics_or_pings == "metrics" and "metrics_files:" in line:
+        elif (
+            state == "app"
+            and metrics_or_pings == "metrics"
+            and "metrics_files:" in line
+        ):
             state = "files"
         elif state == "app" and metrics_or_pings == "pings" and "ping_files:" in line:
             state = "files"
@@ -116,7 +120,9 @@ def _rewrite_repositories_yaml(repo, branch, data):
     new_content = content
     for item in data:
         name, metrics_or_pings, library, files = item
-        new_content = swap_file_list(new_content, name, files, metrics_or_pings, library)
+        new_content = swap_file_list(
+            new_content, name, files, metrics_or_pings, library
+        )
 
     if content == new_content:
         raise Exception(
