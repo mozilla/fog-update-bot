@@ -48,7 +48,9 @@ def test_eval_metrics_index():
 def test_swap_repositories_yaml():
     data = eval_extract(METRICS_INDEX)
     metrics_files = data["metrics_yamls"]
-    output = swap_file_list(REPOSITORIES_YAML, "firefox_desktop", metrics_files, "metrics")
+    output = swap_file_list(
+        REPOSITORIES_YAML, "firefox_desktop", metrics_files, "metrics"
+    )
 
     # New files added.
     assert "- METRICS_FILES" not in output
@@ -65,7 +67,9 @@ def test_swap_repositories_yaml():
 
 def test_swap_repositories_yaml_unchanged():
     metrics_files = ["METRICS_FILES"]
-    output = swap_file_list(REPOSITORIES_YAML, "firefox_desktop", metrics_files, "metrics")
+    output = swap_file_list(
+        REPOSITORIES_YAML, "firefox_desktop", metrics_files, "metrics"
+    )
 
     # New files added.
     assert "- METRICS_FILES" in output
