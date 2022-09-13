@@ -2,6 +2,22 @@
 
 Automation to update `repositories.yaml` of `probe-scraper` with the latest `metrics_index.py` list.
 
+Fetches and parses the `metrics_index.py` from `gecko-dev`, extracts the relevant list of YAML files
+and creates a new Pull Request against `probe-scraper` if it contains any changes.
+
+## Environment variables
+
+| Name | Description |
+| ---- | ----------- |
+| `DEBUG` | If set enables debug logging |
+| `DRY_RUN` | If set to `True` will not create a PR |
+| `GITHUB_REPOSITORY_OWNER` | The owner of the `probe-scraper` repository |
+| `AUTHOR_NAME` | The name name to use for the commit |
+| `AUTHOR_EMAIL` | The email to use for the commit |
+| `GITHUB_TOKEN` | The personal access token to access the GitHub API\* |
+
+\*: Can be created on <https://github.com/settings/tokens>. No additional scopes necessary.
+
 ## Running with Docker
 
 ```
