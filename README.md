@@ -14,9 +14,6 @@ and creates a new Pull Request against `probe-scraper` if it contains any change
 | `GITHUB_REPOSITORY_OWNER` | The owner of the `probe-scraper` repository |
 | `AUTHOR_NAME` | The name name to use for the commit |
 | `AUTHOR_EMAIL` | The email to use for the commit |
-| `GITHUB_TOKEN` | The personal access token to access the GitHub API\* |
-
-\*: Can be created on <https://github.com/settings/tokens>. No additional scopes necessary.
 
 ## Running with Docker
 
@@ -39,6 +36,14 @@ You can run the tests:
 
 ```
 pytest
+```
+
+Manual runs of the updater requires a `GITHUB_TOKEN`.
+Go to <https://github.com/settings/tokens> and create a new token (no additional scopes necessary).
+Set it in your shell:
+
+```
+export GITHUB_TOKEN=<the generated token>
 ```
 
 ## Code of Conduct
