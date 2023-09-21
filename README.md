@@ -1,3 +1,9 @@
+# This repository is archived
+
+The `fog-update-bot` code now lives in <https://github.com/mozilla/probe-scraper/tree/main/fog-updater>
+
+---
+
 # fog-update-bot
 
 Automation to update `repositories.yaml` of `probe-scraper` with the latest `metrics_index.py` list.
